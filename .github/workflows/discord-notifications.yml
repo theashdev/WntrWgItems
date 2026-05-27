@@ -1,0 +1,122 @@
+name: Discord Notifications
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    types: [opened, closed, reopened]
+
+jobs:
+  notify:
+    name: Notify Discord Webhook
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Notification to Discord
+        run: |
+          EVENT_NAME="${{ github.event_name }}"
+          EVENT_PATH="${{ github.event_path }}"
+          TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+
+          if [ "$EVENT_NAME" = "push" ]; then
+            REF=$(jq -r '.ref' "$EVENT_PATH")
+            BRANCH=${REF#refs/heads/}
+            PUSHER=$(jq -r '.pusher.name' "$EVENT_PATH")
+            COMPARE_URL=$(jq -r '.compare' "$EVENT_PATH")
+            REPO_NAME=$(jq -r '.repository.name' "$EVENT_PATH")
+            REPO_URL=$(jq -r '.repository.html_url' "$EVENT_PATH")
+            
+            COMMIT_COUNT=$(jq '.commits | length' "$EVENT_PATH")
+            if [ "$COMMIT_COUNT" -eq 0 ]; then
+              echo "No commits in this push event. Skipping notification."
+              exit 0
+            fi
+
+            jq -n \
+              --arg repo_name "$REPO_NAME" \
+              --arg repo_url "$REPO_URL" \
+              --arg branch "$BRANCH" \
+              --arg pusher "$PUSHER" \
+              --arg compare_url "$COMPARE_URL" \
+              --arg timestamp "$TIMESTAMP" \
+              --argjson commits "$(jq '.commits' "$EVENT_PATH")" \
+              '{
+                username: "GitHub Actions",
+                avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+                embeds: [
+                  {
+                    title: ("🔨 [" + $repo_name + "] " + ($commits | length | tostring) + " New Commit(s)"),
+                    url: $compare_url,
+                    color: 48340,
+                    description: ("**Branch:** `" + $branch + "`\n**Pusher:** `" + $pusher + "`\n\n**Commits:**\n" + ($commits | map("- [`" + .id[0:7] + "`](" + .url + ") " + (.message | split("\n")[0]) + " (*" + .author.name + "*)") | join("\n"))),
+                    footer: {
+                      text: "WntrWgItems Activity Feed"
+                    },
+                    timestamp: $timestamp
+                  }
+                ]
+              }' > discord_payload.json
+
+          elif [ "$EVENT_NAME" = "pull_request" ]; then
+            ACTION=$(jq -r '.action' "$EVENT_PATH")
+            PR_NUMBER=$(jq -r '.number' "$EVENT_PATH")
+            PR_TITLE=$(jq -r '.pull_request.title' "$EVENT_PATH")
+            PR_URL=$(jq -r '.pull_request.html_url' "$EVENT_PATH")
+            PR_USER=$(jq -r '.pull_request.user.login' "$EVENT_PATH")
+            PR_MERGED=$(jq -r '.pull_request.merged' "$EVENT_PATH")
+            REPO_NAME=$(jq -r '.repository.name' "$EVENT_PATH")
+
+            PR_STATUS="Opened"
+            COLOR=16734002
+            
+            if [ "$ACTION" = "closed" ]; then
+              if [ "$PR_MERGED" = "true" ]; then
+                PR_STATUS="Merged 💜"
+                COLOR=9442302
+              else
+                PR_STATUS="Closed ❌"
+                COLOR=14495514
+              fi
+            elif [ "$ACTION" = "reopened" ]; then
+              PR_STATUS="Reopened 🔄"
+              COLOR=48340
+            else
+              PR_STATUS="Opened 🚀"
+            fi
+
+            jq -n \
+              --arg repo_name "$REPO_NAME" \
+              --arg pr_title "$PR_TITLE" \
+              --arg pr_url "$PR_URL" \
+              --arg pr_user "$PR_USER" \
+              --arg pr_number "$PR_NUMBER" \
+              --arg pr_status "$PR_STATUS" \
+              --argjson color "$COLOR" \
+              --arg timestamp "$TIMESTAMP" \
+              '{
+                username: "GitHub Actions",
+                avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+                embeds: [
+                  {
+                    title: ("📦 [" + $repo_name + "] Pull Request #" + $pr_number + " " + $pr_status),
+                    url: $pr_url,
+                    color: $color,
+                    description: ("**Title:** " + $pr_title + "\n**Author:** `" + $pr_user + "`"),
+                    footer: {
+                      text: "WntrWgItems Activity Feed"
+                    },
+                    timestamp: $timestamp
+                  }
+                ]
+              }' > discord_payload.json
+          else
+            echo "Unsupported event: $EVENT_NAME. Skipping notification."
+            exit 0
+          fi
+
+          WEBHOOK_URL="${{ secrets.DISCORD_WEBHOOK }}"
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "Error: The DISCORD_WEBHOOK repository secret is not set."
+            exit 1
+          fi
+
+          curl -s -S -X POST -H "Content-Type: application/json" -d @discord_payload.json "$WEBHOOK_URL"
