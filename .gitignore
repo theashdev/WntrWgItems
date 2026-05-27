@@ -1,0 +1,47 @@
+# .gitignore for WntrWgItems (Gradle / Java)
+
+# Gradle build and cache directories
+.gradle/
+build/
+
+# IntelliJ IDEA project files
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse project files
+.metadata/
+.classpath
+.project
+.settings/
+bin/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Compiled class files
+*.class
+
+# Package files (keep gradle wrapper jar)
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+!gradle/wrapper/gradle-wrapper.jar
+
+# Crash reports and log files
+*.log
+*.dmp
+hs_err_pid*
+reply.to
+
+# Temporary / Scratch files
+.vscode/
+*.tmp
+*.bak

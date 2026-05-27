@@ -1,0 +1,18 @@
+name: Wntr-WgItems
+version: '${version}'
+main: dev.ash.wntrWgItems.WntrWgItems
+api-version: '1.21'
+description: Disables specific item interactions inside WorldGuard regions.
+author: ash
+depend:
+  - WorldGuard
+commands:
+  wgitems:
+    description: Reload the Wg-Items configuration.
+    usage: /wgitems reload
+    permission: wgitems.reload
+    permission-message: You don't have permission to use this command.
+permissions:
+  wgitems.reload:
+    description: Allows reloading the Wg-Items config.
+    default: op

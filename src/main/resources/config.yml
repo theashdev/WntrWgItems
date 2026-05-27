@@ -1,0 +1,28 @@
+Mace-Disable:
+  - "spawn"
+Rockets-Disable:
+  - "spawn"
+Wind-Charge-Disable:
+  - "spawn"
+Spear-Disable:
+  - "spawn"
+Elytra-Disable:
+  - "spawn"
+Fishing-Rod-Pull-Disable:
+  - "spawn"
+End-Crystal-Disable:
+  - "spawn"
+Golden-Apple-Disable:
+  - "spawn"
+Splash-Potion-Disable:
+  - "spawn"
+messages:
+  mace-disabled: "&cYou cannot use a Mace here."
+  rockets-disabled: "&cFirework rockets are disabled in this area."
+  wind-charge-disabled: "&cWind Charges are disabled in this area."
+  spear-disabled: "&cTridents are disabled in this area."
+  elytra-disabled: "&cElytra gliding is disabled in this area."
+  fishing-rod-disabled: "&cFishing-rod pulling is disabled here."
+  end-crystal-disabled: "&cEnd Crystals are disabled in this area."
+  golden-apple-disabled: "&cGolden Apples are disabled in this area."
+  splash-potion-disabled: "&cSplash Potions are disabled in this area."
