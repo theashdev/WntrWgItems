@@ -103,3 +103,10 @@ Developed with ❤️ by **Ashyyy**
 - 💬 **Discord:** `ashyyhere`
 
 If you need any custom features, custom forks, or immediate assistance, feel free to reach out on Discord!
+
+---
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/theashdev/WntrWgItems/issues) if you want to contribute or report bugs.
+
